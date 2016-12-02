@@ -1,8 +1,5 @@
 # birthdaynotifier
 
-The application expects  `gmail_username` and `gmail_password`  variables as command line arguments.
-`birthday_list` is a variable of a path to the json file containing names, emails and birthdates. 
-
 Application sends emails from your gmail account, using google smtp server. If you use 2 factor authentification, make an [application password](https://security.google.com/settings/security/apppasswords?pli=1)
 No more than 99 emails per day are alowed.
 
