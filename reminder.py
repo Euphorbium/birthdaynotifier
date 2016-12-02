@@ -17,7 +17,7 @@ SUBJECT = '''Birthday Reminder: {name_of_birthday_person}'s birthday on {date}''
 BODY = '''
 Hi {name},
 
-This is a reminder that {name_of_birthday_person}s will be celebrating their
+This is a reminder that {name_of_birthday_person} will be celebrating their
 birthday on {date}.
 
 There are {amount_of_days} days left to get a present!'''
