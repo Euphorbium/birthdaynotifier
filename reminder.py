@@ -2,6 +2,7 @@
 Birthday reminder.
 Usage:
     reminder.py gmail <username> <password> --birthdays <json_file>
+    reminder.py validate <json_file>
 '''
 
 from dateutil import parser
@@ -27,10 +28,14 @@ def send_mail(to, subject, body):
     SERVER.send(str(to), subject, body)
 
 def send_mails(birthdays, username, password):
+    if not check_file(birthdays):
+        return
     global SERVER
     SERVER = yagmail.SMTP(username, password)
-    enumerated = list(enumerate(check_file(birthdays)))
+    enumerated = list(enumerate(json.loads(open(birthdays).read())))
     for j, i in enumerated:
+        i['birthdate'] = parser.parse(i['birthdate'], yearfirst=True) \
+            .replace(year=dt.datetime.now().year)
         difference = i['birthdate'] - dt.datetime.now()
         if  dt.timedelta(days=0) < difference < dt.timedelta(days=7):
             for k, l in enumerated:
@@ -40,24 +45,32 @@ def send_mails(birthdays, username, password):
                                    date=i['birthdate'].strftime('%Y-%m-%d'),
                                    amount_of_days=str(difference.days))
                 if j != k:
-                    print l['email']
                     send_mail(l['email'], subject, body)
 
 def check_file(input):
-    '''returns only valid records from json file, with birthday date this year'''
     f = open(input).read()
-    js= json.loads(f)
-    valid = []
+    try:
+        js= json.loads(f)
+    except:
+        print 'failed to parse the file'
+        return False
+    errors = []
     for i in js:
+        if 'name' not in i.keys():
+            errors.append('No name in record: '+str(i))
+        if 'email' not in i.keys():
+            errors.append('No email in record: '+str(i))
         try:
-            birthdate = parser.parse(i['birthdate'], yearfirst=True)\
-                .replace( year=dt.datetime.now().year)
-            valid.append({'name':i['name'], 'email': i['email'], 'birthdate': birthdate})
-        except Exception, ex:
-            print 'failed to parse ', js[i]['birthdate']
-    return valid
+            parser.parse(i['birthdate'], yearfirst=True)
+        except:
+            errors.append('failed to parse birthdate in '+str(i))
+    print '\n'.join(errors)
+    if not errors:
+        return True
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Birthday reminder 1.0')
     if arguments['gmail']:
         send_mails(arguments['<json_file>'], arguments['<username>'], arguments['<password>'])
+    if arguments['validate']:
+        check_file(arguments['<json_file>'])
